@@ -55,7 +55,7 @@ public class ModeratorBot extends TelegramLongPollingBot {
 
                 SendMessage response = new SendMessage();
                 response.setChatId(message.getChatId());
-                response.setText("Сообщение удалено\nПрична: мат, обсценная лексика.\nУчитесь выражать свои мысли культурно."); // it depends
+                response.setText("Сообщение удалено\nПричина: мат, обсценная лексика.\nУчитесь выражать свои мысли культурно."); // it depends
                 response.setReplyToMessageId(message.getMessageId());
                 try {
                     execute(response);
