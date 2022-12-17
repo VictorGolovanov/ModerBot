@@ -10,7 +10,7 @@ public class CensorTest extends TestCase {
     @SuppressWarnings("all")
     public void testFilterTextNullIsFalse() {
         String text = null;
-        boolean result = Censor.filterText(text);
+        boolean result = Censor.filterText(text).getFirst();
         assertFalse(result);
     }
 
@@ -35,7 +35,7 @@ public class CensorTest extends TestCase {
                     "мандарин",
             })
     public void testShouldNotTrigger(String text) {
-        assertFalse(Censor.filterText(text));
+        assertFalse(Censor.filterText(text).getFirst());
     }
 
 
@@ -108,7 +108,7 @@ public class CensorTest extends TestCase {
                     "мандавошка",
             })
     public void shouldTriggerSimple(String text) {
-        assertTrue(Censor.filterText(text));
+        assertTrue(Censor.filterText(text).getFirst());
     }
 
 
@@ -140,7 +140,7 @@ public class CensorTest extends TestCase {
                     "мманда",
             })
     public void shouldTriggerDoubleLetters(String text) {
-        assertTrue(Censor.filterText(text));
+        assertTrue(Censor.filterText(text).getFirst());
     }
 
 
@@ -160,9 +160,10 @@ public class CensorTest extends TestCase {
                     "ebobo",
                     "bля",
                     "bля",
+                    "ПИZZDEZ",
             })
     public void shouldTriggerLatinLetterInsideCyrillic(String text) {
-        assertTrue(Censor.filterText(text));
+        assertTrue(Censor.filterText(text).getFirst());
     }
 
 
@@ -176,7 +177,7 @@ public class CensorTest extends TestCase {
                     "мля",
             })
     public void shouldTriggerStandard(String text) {
-        assertTrue(Censor.filterText(text));
+        assertTrue(Censor.filterText(text).getFirst());
     }
 
 }
