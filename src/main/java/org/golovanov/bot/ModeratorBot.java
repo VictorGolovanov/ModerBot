@@ -1,17 +1,13 @@
 package org.golovanov.bot;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
+import org.golovanov.database.DbConnection;
 import org.golovanov.filter.Censor;
 import org.glassfish.grizzly.utils.Pair;
 import org.golovanov.model.MessageDb;
-import org.golovanov.service.MessageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.golovanov.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RestController;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -19,16 +15,15 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import java.sql.Connection;
 import java.time.LocalDate;
 
 @Component
 @Log4j
 public class ModeratorBot extends TelegramLongPollingBot {
 
-    @Autowired
-    private MessageService service;
+//    private static final Connection connection = DbConnection.getConnection();
+    private static final MessageRepository repository = new MessageRepository();
 
     @Value("${bot.name}")
     private String botName;
@@ -86,8 +81,11 @@ public class ModeratorBot extends TelegramLongPollingBot {
         messageDb.setTgUserLastName(message.getFrom().getLastName());
         messageDb.setIsBot(message.getFrom().getIsBot());
         messageDb.setDate(LocalDate.now());
-        messageDb.setText(pair.getSecond());
-        service.addNewMessage(messageDb);
+        // TODO: 20.12.2022 нужен отдельных механизм на замену стикеров, либо посмотреть, как в базу записывать и такие символы
+        messageDb.setText((pair.getSecond().equals("\uD83D\uDD95") ? "средний палец" : pair.getSecond()));
+
+        repository.saveMessage(messageDb);
+//        service.addNewMessage(messageDb);
     }
 
     private Message getMessageFromUpdate(Update update) {
