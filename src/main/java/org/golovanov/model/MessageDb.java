@@ -11,9 +11,7 @@ public class MessageDb {
 
     private Long tgUserId;
 
-    private String tgUserFirstName;
-
-    private String tgUserLastName;
+    private String tgUserName;
 
     private Boolean isBot;
 

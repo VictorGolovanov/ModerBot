@@ -33,12 +33,11 @@ public class DbConnection {
                 connection.createStatement().execute("CREATE TABLE if not exists messages(" +
                         "id BIGINT NOT NULL AUTO_INCREMENT, " +
                         "user_id BIGINT NOT NULL, " +
-                        "user_name TINYTEXT NOT NULL, " +
-                        "user_last_name TINYTEXT, " +
+                        "user_name TEXT NOT NULL, " +
                         "is_bot TINYINT NOT NULL, " +
                         "`date` TEXT NOT NULL, " + // TODO: 20.12.2022 переделать в нормальную дату
                         "`text` TEXT NOT NULL, " +
-                        "PRIMARY KEY(id))");
+                        "PRIMARY KEY(id)) DEFAULT CHARSET=utf8mb4");
             } catch (SQLException e) {
                 e.printStackTrace();
             }

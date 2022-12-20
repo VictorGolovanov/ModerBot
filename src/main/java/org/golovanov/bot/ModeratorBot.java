@@ -1,7 +1,6 @@
 package org.golovanov.bot;
 
 import lombok.extern.log4j.Log4j;
-import org.golovanov.database.DbConnection;
 import org.golovanov.filter.Censor;
 import org.glassfish.grizzly.utils.Pair;
 import org.golovanov.model.MessageDb;
@@ -15,14 +14,12 @@ import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import java.sql.Connection;
 import java.time.LocalDate;
 
 @Component
 @Log4j
 public class ModeratorBot extends TelegramLongPollingBot {
 
-//    private static final Connection connection = DbConnection.getConnection();
     private static final MessageRepository repository = new MessageRepository();
 
     @Value("${bot.name}")
@@ -62,11 +59,11 @@ public class ModeratorBot extends TelegramLongPollingBot {
 
                 SendMessage response = new SendMessage();
                 response.setChatId(message.getChatId());
-                response.setText("Сообщение удалено\nПричина: мат, обсценная лексика.\nУчитесь выражать свои мысли культурно."); // it depends
+                response.setText("Сообщение удалено\nПричина: мат, обсценная лексика.\nУчитесь выражать свои мысли культурно.\nТут должна быть ссылка на правила");
                 response.setReplyToMessageId(message.getMessageId());
                 try {
                     execute(response);
-                    execute(deleteMessage); // it is optional
+                    execute(deleteMessage);
                 } catch (TelegramApiException e) {
                     log.error(e);
                 }
@@ -77,15 +74,12 @@ public class ModeratorBot extends TelegramLongPollingBot {
     private void prepareMessageForDbAndSave(Message message, Pair<Boolean, String> pair) {
         MessageDb messageDb = new MessageDb();
         messageDb.setTgUserId(message.getFrom().getId());
-        messageDb.setTgUserFirstName(message.getFrom().getFirstName());
-        messageDb.setTgUserLastName(message.getFrom().getLastName());
+        messageDb.setTgUserName(message.getFrom().getUserName());
         messageDb.setIsBot(message.getFrom().getIsBot());
         messageDb.setDate(LocalDate.now());
-        // TODO: 20.12.2022 нужен отдельных механизм на замену стикеров, либо посмотреть, как в базу записывать и такие символы
-        messageDb.setText((pair.getSecond().equals("\uD83D\uDD95") ? "средний палец" : pair.getSecond()));
+        messageDb.setText(pair.getSecond());
 
         repository.saveMessage(messageDb);
-//        service.addNewMessage(messageDb);
     }
 
     private Message getMessageFromUpdate(Update update) {

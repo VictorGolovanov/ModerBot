@@ -20,11 +20,9 @@ public class MessageRepository {
 
         String sql = SAVE_MESSAGE_START + "values (" +
                 messageDb.getTgUserId() + ", " +
-                "'" + messageDb.getTgUserFirstName() + "'" + ", " +
-                "'" + messageDb.getTgUserLastName() + "'" + ", " +
+                "'" + messageDb.getTgUserName() + "'" + ", " +
                 messageDb.getIsBot() + ", " +
-//                java.sql.Date.valueOf(messageDb.getDate()) + ", " + todo !
-                messageDb.getDate().toString() + ", " +
+                messageDb.getDate().toString() + ", " + // TODO: 20.12.2022 java.sql.Date.valueOf(messageDb.getDate()) + ", " + todo !
                 "'" + messageDb.getText() + "'" + ");";
 
         try {
