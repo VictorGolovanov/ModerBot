@@ -6,10 +6,11 @@ import org.golovanov.model.MessageDb;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import static org.golovanov.database.DbStrings.*;
 
 @Log4j
 public class MessageRepository {
+
+    private static final String SAVE_MESSAGE_START = "insert into messages(user_id, `user_name`, is_bot, message_date, `text`) ";
 
     public boolean saveMessage(MessageDb messageDb) {
         if (messageDb == null) {
@@ -22,14 +23,15 @@ public class MessageRepository {
                 messageDb.getTgUserId() + ", " +
                 "'" + messageDb.getTgUserName() + "'" + ", " +
                 messageDb.getIsBot() + ", " +
-                messageDb.getDate().toString() + ", " + // TODO: 20.12.2022 java.sql.Date.valueOf(messageDb.getDate()) + ", " + todo !
+                "'" + messageDb.getDate() + "', " +
                 "'" + messageDb.getText() + "'" + ");";
 
         try {
-            int result = connection.createStatement().executeUpdate(sql);
-            return result > 0;
+            connection.createStatement().executeUpdate(sql);
+            return true;
         } catch (SQLException e) {
-            throw new RuntimeException(e);
+            log.error("Something went wrong with insertion to database", e);
         }
+        return false;
     }
 }

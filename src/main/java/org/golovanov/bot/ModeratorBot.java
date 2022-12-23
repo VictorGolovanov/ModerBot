@@ -43,30 +43,41 @@ public class ModeratorBot extends TelegramLongPollingBot {
 
         Message message = getMessageFromUpdate(update);
         if (message != null) {
-            // this log is for development
-            log.debug("Message id: " + message.getMessageId());
-            log.debug("Chat id: " + message.getChatId());
-            log.debug("text: " + message.getText());
+            validateMessageSender(message);
+            validateMessageContent(message);
+        }
+    }
 
-            Pair<Boolean, String> pair = Censor.censor(message);
 
-            if (pair.getFirst() && pair.getSecond() != null) {
-
-                // add to db
-                prepareMessageForDbAndSave(message, pair);
-
+    private void validateMessageSender(Message message) {
+        boolean isSenderBad = Censor.validateMessageSender(message);
+        if (isSenderBad) {
+            try {
                 DeleteMessage deleteMessage = new DeleteMessage(String.valueOf(message.getChatId()), message.getMessageId());
+                execute(deleteMessage);
+            } catch (TelegramApiException e) {
+                log.error("Something went wrong with Telegram execution", e);
+            }
+        }
+    }
 
-                SendMessage response = new SendMessage();
-                response.setChatId(message.getChatId());
-                response.setText("Сообщение удалено\nПричина: мат, обсценная лексика.\nУчитесь выражать свои мысли культурно.\nТут должна быть ссылка на правила");
-                response.setReplyToMessageId(message.getMessageId());
-                try {
-                    execute(response);
-                    execute(deleteMessage);
-                } catch (TelegramApiException e) {
-                    log.error(e);
-                }
+    private void validateMessageContent(Message message) {
+        Pair<Boolean, String> pair = Censor.validateMessage(message);
+
+        if (pair.getFirst() && pair.getSecond() != null) {
+            prepareMessageForDbAndSave(message, pair);
+
+            DeleteMessage deleteMessage = new DeleteMessage(String.valueOf(message.getChatId()), message.getMessageId());
+
+            SendMessage response = new SendMessage();
+            response.setChatId(message.getChatId());
+            response.setText("Сообщение удалено\nПричина: мат, обсценная лексика.\nУчитесь выражать свои мысли культурно.\nТут должна быть ссылка на правила");
+            response.setReplyToMessageId(message.getMessageId());
+            try {
+                execute(response);
+                execute(deleteMessage);
+            } catch (TelegramApiException e) {
+                log.error("Something went wrong with Telegram execution", e);
             }
         }
     }

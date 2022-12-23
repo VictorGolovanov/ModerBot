@@ -35,7 +35,7 @@ public class DbConnection {
                         "user_id BIGINT NOT NULL, " +
                         "user_name TEXT NOT NULL, " +
                         "is_bot TINYINT NOT NULL, " +
-                        "`date` TEXT NOT NULL, " + // TODO: 20.12.2022 переделать в нормальную дату
+                        "message_date DATE NOT NULL, " +
                         "`text` TEXT NOT NULL, " +
                         "PRIMARY KEY(id)) DEFAULT CHARSET=utf8mb4");
             } catch (SQLException e) {
