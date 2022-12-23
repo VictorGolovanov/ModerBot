@@ -8,8 +8,10 @@ import org.golovanov.repository.MessageRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.RestrictChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
+import org.telegram.telegrambots.meta.api.objects.ChatPermissions;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 public class ModeratorBot extends TelegramLongPollingBot {
 
     private static final MessageRepository repository = new MessageRepository();
+    private static final int badMessagesLimit = 10;
 
     @Value("${bot.name}")
     private String botName;
@@ -40,16 +43,20 @@ public class ModeratorBot extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
-
         Message message = getMessageFromUpdate(update);
         if (message != null) {
-            validateMessageSender(message);
-            validateMessageContent(message);
+            // если сообщение от спаммера, то мы его сразу удаляем
+            if (!validateMessageSender(message)) {
+                // если сообщение матерное, проверяем, не пора ли блокировать
+                if (validateMessageContent(message)) {
+                    checkForBan(message);
+                }
+            }
         }
     }
 
 
-    private void validateMessageSender(Message message) {
+    private boolean validateMessageSender(Message message) {
         boolean isSenderBad = Censor.validateMessageSender(message);
         if (isSenderBad) {
             try {
@@ -59,9 +66,10 @@ public class ModeratorBot extends TelegramLongPollingBot {
                 log.error("Something went wrong with Telegram execution", e);
             }
         }
+        return isSenderBad;
     }
 
-    private void validateMessageContent(Message message) {
+    private boolean validateMessageContent(Message message) {
         Pair<Boolean, String> pair = Censor.validateMessage(message);
 
         if (pair.getFirst() && pair.getSecond() != null) {
@@ -79,7 +87,33 @@ public class ModeratorBot extends TelegramLongPollingBot {
             } catch (TelegramApiException e) {
                 log.error("Something went wrong with Telegram execution", e);
             }
+            return true;
         }
+        return false;
+    }
+
+    private void checkForBan(Message message) {
+       int count = repository.getBadMessageCountById(message.getFrom().getId());
+        log.debug("User with id " + message.getFrom().getId() + " broke the rules " + count + " times :(");
+       if (count >= badMessagesLimit) {
+           log.debug("Ban-hammer should be implemented!");
+           // TODO: 23.12.2022 prepare something to ban user
+           ChatPermissions permissions = new ChatPermissions();
+           permissions.setCanSendMessages(false);
+           try {
+               // RestrictChatMember с указанными выше доступами позволяет пользователю читать посты и комментарии, но не позволяет писать.
+               this.execute(RestrictChatMember.builder()
+                       .chatId(message.getChatId())
+                       .userId(message.getFrom().getId())
+                       .permissions(permissions)
+                       .untilDate(60) // в секундах? автоматический разбан не происходит...
+                       .build());
+           } catch (TelegramApiException e) {
+               log.error("Something went wrong with ban-hammer :(", e);
+           }
+
+
+       }
     }
 
     private void prepareMessageForDbAndSave(Message message, Pair<Boolean, String> pair) {

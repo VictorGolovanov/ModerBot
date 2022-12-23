@@ -32,6 +32,10 @@ public class Censor {
         log.debug("is bot: " + isBot);
         log.debug("text: " + message.getText());
         log.debug("======");
+        // заготовка
+        if (senderFirstName.equals("очень плохое слово")) {
+            return true;
+        }
         return false;
     }
 
