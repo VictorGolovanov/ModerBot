@@ -8,20 +8,39 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Properties;
 
+@Component
 public class DbConnection {
-
-    // тут надо как-то переделать, чтобы брать данные из файла application.properties или может брать из System.getProperty()
 
     private static Connection connection;
 
+    private static String DB_URL_STATIC;
 
-    private static final String DB_URL_STATIC = "jdbc:mysql://localhost:3306/";
+    private static String DB_NAME_STATIC;
 
-    private static final String DB_NAME_STATIC = "moderbot";
+    private static String DB_USERNAME_STATIC;
 
-    private static final String DB_USERNAME_STATIC = "username";
+    private static String DB_PASS_STATIC;
 
-    private static final String DB_PASS_STATIC = "password";
+
+    @Value("${db.url}")
+    public void setDbUrlStatic(String dbUrlStatic) {
+        DB_URL_STATIC = dbUrlStatic;
+    }
+
+    @Value("${db.name}")
+    public void setDbNameStatic(String dbNameStatic) {
+        DB_NAME_STATIC = dbNameStatic;
+    }
+
+    @Value("${db.username}")
+    public void setDbUsernameStatic(String dbUsernameStatic) {
+        DB_USERNAME_STATIC = dbUsernameStatic;
+    }
+
+    @Value("${db.password}")
+    public void setDbPassStatic(String dbPassStatic) {
+        DB_PASS_STATIC = dbPassStatic;
+    }
 
 
     public static Connection getConnection() {
