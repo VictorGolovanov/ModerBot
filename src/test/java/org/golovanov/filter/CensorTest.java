@@ -33,6 +33,7 @@ public class CensorTest extends TestCase {
                     "бляха",
                     "бляшка",
                     "мандарин",
+                    "скипидар",
             })
     public void testShouldNotTrigger(String text) {
         assertFalse(Censor.filterText(text).getFirst());
@@ -175,6 +176,18 @@ public class CensorTest extends TestCase {
             {
                     "блэт",
                     "мля",
+                    // слова, найденные потом
+                    "бл@",
+                    "бл@дь",
+                    "бл@ть",
+                    "ёбацца",
+                    "ПидоРАЗ",
+                    "ПидорРАЗ",
+                    "Пидорар",
+                    "педрила",
+                    "пидарюгу",
+                    "пидорюка",
+                    "мандализ",
             })
     public void shouldTriggerStandard(String text) {
         assertTrue(Censor.filterText(text).getFirst());

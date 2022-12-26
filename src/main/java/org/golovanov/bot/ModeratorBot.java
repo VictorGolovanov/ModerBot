@@ -101,13 +101,19 @@ public class ModeratorBot extends TelegramLongPollingBot {
            ChatPermissions permissions = new ChatPermissions();
            permissions.setCanSendMessages(false);
            try {
+               SendMessage response = new SendMessage();
+               response.setChatId(message.getChatId());
+               response.setText("Вас бы забанить уже надо, за злостное нарушение правил, но для тестов мы вас банить не будем. \nСпасибо, что помогаете нам стать лучше!");
+               response.setReplyToMessageId(message.getMessageId());
+               execute(response);
                // RestrictChatMember с указанными выше доступами позволяет пользователю читать посты и комментарии, но не позволяет писать.
-               this.execute(RestrictChatMember.builder()
-                       .chatId(message.getChatId())
-                       .userId(message.getFrom().getId())
-                       .permissions(permissions)
-                       .untilDate(60) // в секундах? автоматический разбан не происходит...
-                       .build());
+//               this.execute(RestrictChatMember.builder()
+//                       .chatId(message.getChatId())
+//                       .userId(message.getFrom().getId())
+//                       .permissions(permissions)
+//                       .untilDate(60) // в секундах? автоматический разбан не происходит...
+//                       .build());
+
            } catch (TelegramApiException e) {
                log.error("Something went wrong with ban-hammer :(", e);
            }
